@@ -9,6 +9,12 @@
 
 今回はAmazon ECS Express Mode（以下、本文ではECS Express Mode）を検証してみます。
 
+参考リンク
+
+- [Announcing Amazon ECS Express Mode](https://aws.amazon.com/jp/about-aws/whats-new/2025/11/announcing-amazon-ecs-express-mode/)
+- [Build production-ready applications without infrastructure complexity using Amazon ECS Express Mode](https://aws.amazon.com/jp/blogs/aws/build-production-ready-applications-without-infrastructure-complexity-using-amazon-ecs-express-mode/)
+- [Benefits of Amazon ECS Express Mode services](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/express-service-overview.html)
+
 ## ECSのデプロイっって地味に面倒かもしれねぇ
 
 これまで何度もECSのデプロイを経験してきましたが、タスク定義の作成やサービスの更新など、手順が多くて面倒に感じることがありました。
@@ -22,6 +28,8 @@
 4. デプロイの確認、ヘルスチェック
 
 ECSの前段にALBを配置する場合は、ALBのリスナーやターゲットグループの設定も必要になります。
+多くはAWS CDKやTerraformなどのIaCツールを使って自動化していると思いますが、手動で行う場合は特に面倒に感じます。
+※筆者の場合はマルチリージョン構成のECSをAWS CDKを使って自動化していたりします。
 
 ECS Express Modeではこれらの手順を簡素化し、より迅速にデプロイを行えるようになりました。
 説明を聞いてもなんだかピンとこないと思うので実際にやってみましょう。
