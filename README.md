@@ -40,16 +40,24 @@ An unexpected error occurred: No default VPC found in the region
 
 ## セットアップ
 
+では、事前準備を進めていきましょう。
+
 ## Optional: デフォルトVPCの作成
 
-注意事項
+まずはdefault VPCが存在しない人のための手順を紹介しようと思いますが、注意事項がありますので確認します。
+※すでにAWSアカウント内にdefault VPCが存在する場合はこのセクションはスキップして構いません。
 
-- デフォルトVPCは1つのリージョンにつき1つのみ作成できます
+AWS CloudShellを使用してVPCを作成します。もちろん、VPCを作成するのでVPCを作成するための権限が必要です。
+今回はAdministratorAccessを持つユーザーでCloudShellにログインしています。
+
+default VPCには以下の特徴があります。
+
+- defaultVPCは1つのリージョンにつき1つのみ作成可能
 - 既にデフォルトVPCが存在する場合は、以下のエラーが表示されます：
   ```
   An error occurred (DefaultVpcAlreadyExists) when calling the CreateDefaultVpc operation: A Default VPC already exists for this account in this region.
   ```
-- デフォルトVPCは以下の特徴があります：
+- default VPCは以下の特徴があります：
   - CIDR ブロック: `172.31.0.0/16`
   - 各アベイラビリティーゾーンにデフォルトサブネットが自動作成されます
   - インターネットゲートウェイが自動的にアタッチされます
@@ -58,13 +66,14 @@ An unexpected error occurred: No default VPC found in the region
 
 ### デフォルトVPCの作成
 
+では実際にデフォルトVPCを作成してみましょう。
 デフォルトVPCが存在しない場合は、以下のコマンドで作成できます。
 
 ```bash
 aws ec2 create-default-vpc
 ```
 
-正常に作成されると、以下のようなレスポンスが返されます：
+正常に作成されると、以下のようなレスポンスが返されます。
 
 ```json
 {
@@ -93,7 +102,7 @@ aws ec2 create-default-vpc
 
 ### デフォルトVPCにNameタグを追加
 
-作成直後のデフォルトVPCにはNameタグが設定されていないため、以下のコマンドで追加します：
+作成直後のデフォルトVPCにはNameタグが設定されていないため、以下のコマンドで追加します。
 
 ```bash
 # VPC IDを取得
