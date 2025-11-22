@@ -1,0 +1,20 @@
+{
+    "name": "aws-container",
+    "build": {
+        "dockerfile": "dockerfile"
+    },
+    "postCreateCommand": "sh .devcontainer/aws/postCreateCommand.sh",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "ms-python.debugpy",
+                "ms-python.flake8",
+                "njpwerner.autodocstring",
+                "yzhang.markdown-all-in-one",
+                "DavidAnson.vscode-markdownlint"
+            ]
+        }
+    }
+}

@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/vscode/devcontainers/typescript-node:22
+FROM mcr.microsoft.com/vscode/devcontainers/typescript-node:18
 RUN arch=$(uname -m) && \
     if [ "$arch" != "x86_64" ]; then \
         arch="aarch64"; \
