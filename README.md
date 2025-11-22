@@ -80,11 +80,10 @@ default VPCには以下の特徴があります。
   - インターネットゲートウェイが自動的にアタッチされます
   - デフォルトのセキュリティグループとネットワークACLが作成されます
 
-
 ### デフォルトVPCの作成
 
 では実際にデフォルトVPCを作成してみましょう。
-デフォルトVPCが存在しない場合は、以下のコマンドで作成できます。
+デフォルトVPCが存在しない場合は、[AWS CLIのドキュメント](https://docs.aws.amazon.com/cli/latest/reference/ec2/create-default-vpc.html)を参考に以下のコマンドで作成できます。
 
 ```bash
 aws ec2 create-default-vpc
