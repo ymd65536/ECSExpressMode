@@ -27,6 +27,8 @@ ECS Express Modeではこれらの手順を簡素化し、より迅速にデプ�
 - AWSとGitHubでコネクションを作成する
 - コードをプッシュしてCode Buildをキック
   - イメージをビルドされてECRにプッシュされます
+- Optional: デフォルトVPCの作成
+  - デフォルトVPCが存在しない場合は作成します
 - ECRのイメージを使ってデプロイ
 
 なお、ECS Expressではdefault VPCを使用します。default VPCが存在しない場合は作成時に以下のエラーが発生しますので注意してください。
@@ -37,6 +39,83 @@ An unexpected error occurred: No default VPC found in the region
 ```
 
 ## セットアップ
+
+## Optional: デフォルトVPCの作成
+
+注意事項
+
+- デフォルトVPCは1つのリージョンにつき1つのみ作成できます
+- 既にデフォルトVPCが存在する場合は、以下のエラーが表示されます：
+  ```
+  An error occurred (DefaultVpcAlreadyExists) when calling the CreateDefaultVpc operation: A Default VPC already exists for this account in this region.
+  ```
+- デフォルトVPCは以下の特徴があります：
+  - CIDR ブロック: `172.31.0.0/16`
+  - 各アベイラビリティーゾーンにデフォルトサブネットが自動作成されます
+  - インターネットゲートウェイが自動的にアタッチされます
+  - デフォルトのセキュリティグループとネットワークACLが作成されます
+
+
+### デフォルトVPCの作成
+
+デフォルトVPCが存在しない場合は、以下のコマンドで作成できます。
+
+```bash
+aws ec2 create-default-vpc
+```
+
+正常に作成されると、以下のようなレスポンスが返されます：
+
+```json
+{
+    "Vpc": {
+        "OwnerId": "123456789012",
+        "InstanceTenancy": "default",
+        "Ipv6CidrBlockAssociationSet": [],
+        "CidrBlockAssociationSet": [
+            {
+                "AssociationId": "vpc-cidr-assoc-XXXXXXXX",
+                "CidrBlock": "172.31.0.0/16",
+                "CidrBlockState": {
+                    "State": "associated"
+                }
+            }
+        ],
+        "IsDefault": true,
+        "Tags": [],
+        "VpcId": "vpc-XXXXXXXXX",
+        "State": "pending",
+        "CidrBlock": "172.31.0.0/16",
+        "DhcpOptionsId": "dopt-XXXXXXXX"
+    }
+}
+```
+
+### デフォルトVPCにNameタグを追加
+
+作成直後のデフォルトVPCにはNameタグが設定されていないため、以下のコマンドで追加します：
+
+```bash
+# VPC IDを取得
+VPC_ID=$(aws ec2 describe-vpcs --filters "Name=isDefault,Values=true" --query "Vpcs[0].VpcId" --output text)
+
+# Nameタグを追加
+aws ec2 create-tags --resources $VPC_ID --tags Key=Name,Value=default
+```
+
+### デフォルトVPCの確認
+
+作成されたデフォルトVPCを確認するには、以下のコマンドを実行します：
+
+```bash
+aws ec2 describe-vpcs --filters "Name=isDefault,Values=true" --query "Vpcs[0].IsDefault"
+```
+
+実行結果
+
+```
+true
+```
 
 ### AWSとGitHubのコネクション作成
 
