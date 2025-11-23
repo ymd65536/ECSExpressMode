@@ -43,10 +43,9 @@ ECS Express Modeではこれらの手順を簡素化し、より迅速にデプ�
 
 - Optional: デフォルトVPCの作成
   - デフォルトVPCが存在しない場合は作成します
-- AWSとGitHubでコネクションを作成する
-- コードをプッシュしてCode Buildをキック
-  - イメージをビルドされてECRにプッシュされます
-- ECRのイメージを使ってデプロイ
+- CodeBuildを構築してイメージをビルド
+  - イメージをビルドしてECRにプッシュされます
+- ECRのイメージを使ってECS Expressによるデプロイ
 
 なお、ECS Expressではdefault VPCを使用します。default VPCが存在しない場合は作成時に以下のエラーが発生しますので注意してください。
 
@@ -142,11 +141,54 @@ aws ec2 describe-vpcs --filters "Name=isDefault,Values=true" --query "Vpcs[0].Is
 true
 ```
 
-### AWSとGitHubのコネクション作成
+### CodeBuildを構築してイメージをビルド
 
-### コードをプッシュしてCode Buildをキック
+```bash
+aws cloudformation deploy --template-file image_build.yml --stack-name ecs-express-image-build --capabilities CAPABILITY_NAMED_IAM
+```
+
+```bash
+aws codebuild start-build --project-name image-build-stack-build-project --region ap-northeast-1 && BUILD_ID="image-build-stack-build-project:e8aeb764-5c76-480c-87e5-3a1183944c69" && while true; do STATUS=$(aws codebuild batch-get-builds --ids "$BUILD_ID" --region ap-northeast-1 --query 'builds[0].buildStatus' --output text); echo "Build status: $STATUS"; if [ "$STATUS" != "IN_PROGRESS" ]; then break; fi; sleep 10; done && echo "Final status: $STATUS"
+```
 
 ## ECRのイメージを使ってデプロイ
+
+```bash
+aws cloudformation deploy --template-file EcsExpress.yml --stack-name ecs-express-stack --capabilities CAPABILITY_NAMED_IAM --region ap-northeast-1
+```
+
+## 検証して思ったこと
+
+とても簡単にECSのデプロイができましたが、個人的にはいくつか気になる点がありましたのでまとめてみます。
+
+- Default VPCを使用する点
+- コンテナイメージのビルドを自分で用意する必要がある点
+- 従来のECSと同じく、ランニングコストが常に発生する点
+
+### Default VPCを使用する点について
+
+Default VPCが存在しなかったため、今回はコマンドを使ってDefault VPCを作成しました。
+Default VPCの中にあるサブネットの特徴としてはすべてがパブリックサブネットである点です。
+
+ドキュメントには以下のように記載されています。
+
+> デフォルトでは、デフォルトサブネットはパブリックサブネットに指定されています。
+
+引用：[デフォルトサブネット - Amazon Virtual Private Cloud](https://docs.aws.amazon.com/ja_jp/vpc/latest/userguide/default-subnet.html)
+
+ECS Express ModeではDefault VPCを使用するため、タスク1つずつにパブリックIPアドレスが割り当てられてしまいます。
+よって、セキュリティ面を考慮して実際に使うときはNetworkConfigurationを考慮する必要があります。
+
+### コンテナイメージのビルドを自分で用意する必要がある点
+
+ECS Express Modeではコンテナイメージのビルドは自分で用意する必要があります。これは通常のECSと同じです。
+このコンテナイメージをどのようにビルドしてECRに置いておくかが重要になります。今回はCodeBuildを使ってビルドしましたが、他にもGitHub Actionsなどを使うこともできます。最近のAWSではGitHub Actionsとの連携機能やGitLabとの連携機能も充実してきていますので、CI/CDパイプラインの一部として組み込むことができます。
+
+### 従来のECSと同じく、ランニングコストが常に発生する点
+
+ECS Express Modeは従来のECSと同じく、サービスが稼働している限りランニングコストが発生します。
+例えば、1つのタスクが常に稼働している場合、その分のリソース使用料が発生します。
+ECS Express Modeはデプロイの簡素化に焦点を当てていますが、コスト面では従来のECSと同様に考慮が必要です。
 
 ## まとめ
 
