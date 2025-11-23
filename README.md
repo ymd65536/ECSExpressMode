@@ -190,7 +190,30 @@ ECS Express Modeは従来のECSと同じく、サービスが稼働している�
 例えば、1つのタスクが常に稼働している場合、その分のリソース使用料が発生します。
 ECS Express Modeはデプロイの簡素化に焦点を当てていますが、コスト面では従来のECSと同様に考慮が必要です。
 
+## ECS Express Modeを自動化する
+
+AWSの公式ブログでは各種IaC(TerraformやAWS CDK、CloudFormation)にも対応していることが紹介されています。今回の検証ではCloudFormationテンプレートを使用してECS Express Modeの構築を自動化しましたので、IaCで自動化したい場合は以下の参考リンクを参照してください。
+
+[AWS::ECS::ExpressGatewayService - AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-ecs-expressgatewayservice.html)
+
+### 余談：CloudFormationでECS Express Modeのネットワークを変更する場合
+
+`AWS::ECS::ExpressGatewayService ExpressGatewayServiceNetworkConfiguration` プロパティを使用して、ECS Express Modeのネットワーク設定をカスタマイズできます。
+
+## IAMロールに関すること
+
+TaskExecutionRoleのポリシーでは`arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy`が必要であり、InfrastructureRoleには`arn:aws:iam::aws:policy/service-role/AmazonECSInfrastructureRoleforExpressGatewayServices`が必要です。
+
+これもまた不思議なところで、ECSといったらTaskExecutionRoleと`TaskRole`の2つが必要ですが、ECS Express Modeを使う場合はTaskExecutionRoleとInfrastructureRoleの2つが必要になります。TaskRoleを明示的に指定しなくても良いということです。
+
+※TaskRoleはAdditional Configuration(追加設定)で任意に指定できます。
+
 ## まとめ
+
+ECS Express Modeを使ってみての感想としては、非常に簡単にECSのデプロイができる点が魅力的でした。
+アプリケーションをサクッとデプロイしてPoCしたい場合や、小規模なプロジェクトでECSを使いたい場合には特に有用だと感じました。
+
+個人的にはALBを使わないECSの利用が多いのでそういう設定ができたらもっと便利になるのではないかと思いました。
 
 ## AWS CLI インストールと SSO ログイン手順 (Linux環境)
 
