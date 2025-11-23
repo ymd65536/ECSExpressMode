@@ -1,0 +1,76 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'ECS Express Mode - Simplified deployment for containerized web applications'
+
+Parameters:
+  ImageBuildStackName:
+    Type: String
+    Description: Stack name of the image build CloudFormation stack
+    Default: image-build-stack
+  
+  ContainerPort:
+    Type: Number
+    Description: Container port to expose
+    Default: 80
+  
+  ServiceName:
+    Type: String
+    Description: Name of the ECS Express service
+    Default: default
+
+Resources:
+  # Task Execution Role
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ServiceName}-execution-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+  # Infrastructure Role
+  InfrastructureRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ServiceName}-infrastructure-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSInfrastructureRoleforExpressGatewayServices
+
+  # ECS Express Gateway Service
+  ExpressGatewayService:
+    Type: AWS::ECS::ExpressGatewayService
+    Properties:
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      InfrastructureRoleArn: !GetAtt InfrastructureRole.Arn
+      PrimaryContainer:
+        Image: !Sub
+          - '${EcrRepoUri}:latest'
+          - EcrRepoUri:
+              Fn::ImportValue: !Sub '${ImageBuildStackName}-EcrRepositoryUri'
+        ContainerPort: !Ref ContainerPort
+
+Outputs:
+  ServiceArn:
+    Description: ECS Express Gateway Service ARN
+    Value: !GetAtt ExpressGatewayService.ServiceArn
+  
+  TaskExecutionRoleArn:
+    Description: Task Execution Role ARN
+    Value: !GetAtt TaskExecutionRole.Arn
+  
+  InfrastructureRoleArn:
+    Description: Infrastructure Role ARN
+    Value: !GetAtt InfrastructureRole.Arn
+
