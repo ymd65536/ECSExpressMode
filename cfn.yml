@@ -55,6 +55,33 @@ Resources:
                   - 'ecr:CompleteLayerUpload'
                 Resource: !Sub 'arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/*'
 
+  # ECRリポジトリ
+  EcrRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Ref ImageRepoName
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      ImageTagMutability: MUTABLE
+      EncryptionConfiguration:
+        EncryptionType: AES256
+      LifecyclePolicy:
+        LifecyclePolicyText: !Sub |
+          {
+            "rules": [
+              {
+                "rulePriority": 1,
+                "description": "Keep last 10 images, expire others",
+                "selection": {
+                  "tagStatus": "any",
+                  "countType": "imageCountMoreThan",
+                  "countNumber": 10
+                },
+                "action": { "type": "expire" }
+              }
+            ]
+          }
+
   # CodeBuildプロジェクト（パブリックリポジトリ用）
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
@@ -96,3 +123,13 @@ Outputs:
   CodeBuildProjectArn:
     Description: ARN of the CodeBuild Project
     Value: !GetAtt CodeBuildProject.Arn
+
+  EcrRepositoryName:
+    Description: Name of the ECR Repository
+    Value: !Ref EcrRepository
+    Export:
+      Name: !Sub '${AWS::StackName}-EcrRepositoryName'
+
+  EcrRepositoryUri:
+    Description: URI of the ECR Repository
+    Value: !GetAtt EcrRepository.RepositoryUri
