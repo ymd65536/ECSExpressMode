@@ -208,6 +208,14 @@ TaskExecutionRoleのポリシーでは`arn:aws:iam::aws:policy/service-role/Amaz
 
 ※TaskRoleはAdditional Configuration(追加設定)で任意に指定できます。
 
+## capacityProviderについて
+
+ECS Express ModeではcapacityProviderの指定がありません。LaunchTypeとしてFARGATEが使用されます。
+
+## 削除する方法
+
+ECSサービスを削除すると関連のリソースも削除されます。
+
 ## まとめ
 
 ECS Express Modeを使ってみての感想としては、非常に簡単にECSのデプロイができる点が魅力的でした。
