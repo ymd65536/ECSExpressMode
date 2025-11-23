@@ -6,6 +6,16 @@ Parameters:
     Type: String
     Default: 'https://github.com/ymd65536/ECSExpressMode.git'
     Description: Public GitHub Repository URL
+  
+  ImageRepoName:
+    Type: String
+    Default: 'ecs-express-mode'
+    Description: ECR Repository Name
+  
+  ContainerName:
+    Type: String
+    Default: 'app'
+    Description: Container Name for ECS
 
 Resources:
   # CodeBuild用のサービスロール
@@ -58,6 +68,15 @@ Resources:
         ComputeType: BUILD_GENERAL1_SMALL
         Image: aws/codebuild/standard:7.0
         PrivilegedMode: true
+        EnvironmentVariables:
+          - Name: AWS_DEFAULT_REGION
+            Value: !Ref AWS::Region
+          - Name: AWS_ACCOUNT_ID
+            Value: !Ref AWS::AccountId
+          - Name: IMAGE_REPO_NAME
+            Value: !Ref ImageRepoName
+          - Name: CONTAINER_NAME
+            Value: !Ref ContainerName
       Source:
         Type: GITHUB
         Location: !Ref GitHubRepositoryUrl
