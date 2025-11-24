@@ -1,5 +1,4 @@
 # 【AWS】検証！Amazon ECS Express ModeとCode Buildでデプロイ
-
 ## はじめに
 
 この記事では「この前リリースされた機能って実際に動かすとどんな感じなんだろう」とか「もしかしたら内容次第では使えるかも？？」などAWSサービスの中でも特定の機能にフォーカスして検証していく記事です。
@@ -218,16 +217,16 @@ TaskExecutionRoleのポリシーでは`arn:aws:iam::aws:policy/service-role/Amaz
 
 ## capacityProviderについて
 
-ECS Express ModeではcapacityProviderの指定がありません。LaunchTypeとしてFARGATEが使用されます。
+ECS Express ModeではcapacityProviderの指定がありません。LaunchTypeとしてはFagateが使用されます。
 
 ## 削除する方法
 
 ECSサービスを削除すると関連のリソースも削除されますが、クラスターは残るため手動で削除する必要があります。
-ECSの起動に使ったリソースを全て削除する場合はDefault VPCとECRのリポジトリも手動で削除する必要がありますが、Default VPCは他のサービスで使用されている可能性があるため注意が必要です。
+ECSの起動に使ったリソースを全て削除する場合はDefault VPCとECRのリポジトリも手動で削除する必要がありますが、Default VPCは他のサービスで使用されている可能性があるため、注意が必要です。
 
 ## まとめ
 
-ECS Express Modeを使ってみての感想としては、非常に簡単にECSのデプロイができる点が魅力的でした。
+ECS Express Modeを使ってみての感想としては、簡単にECSのデプロイが可能である点は魅力的でした。
 アプリケーションをサクッとデプロイしてPoCしたい場合や、小規模なプロジェクトでECSを使いたい場合には特に有用だと感じました。
 
 個人的にはALBを使わないECSの利用が多いのでそういう設定ができたらもっと便利になるのではないかと思いました。
