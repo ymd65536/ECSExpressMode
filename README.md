@@ -140,21 +140,35 @@ aws ec2 describe-vpcs --filters "Name=isDefault,Values=true" --query "Vpcs[0].Is
 true
 ```
 
-### CodeBuildを構築してイメージをビルド
+## CodeBuildを構築してイメージをビルド
+
+ではここから、ECS Express Modeで使用するコンテナイメージをCodeBuildでビルドしてECRにプッシュする手順を紹介します。
+今回はCloudFormationテンプレートを使用してCodeBuildのプロジェクトを作成し、ビルドを実行します。
+
+以下のコマンドでCloudFormationスタックをデプロイします。
 
 ```bash
 aws cloudformation deploy --template-file image_build.yml --stack-name ecs-express-image-build --capabilities CAPABILITY_NAMED_IAM
 ```
 
+スタックのデプロイが完了したら、以下のコマンドでビルドを開始します。`BUILD_ID`という変数の後ろから最後までのコマンドはビルドの進捗をポーリングしてステータスを表示するためのものです。
+
 ```bash
 aws codebuild start-build --project-name image-build-stack-build-project --region ap-northeast-1 && BUILD_ID="image-build-stack-build-project:e8aeb764-5c76-480c-87e5-3a1183944c69" && while true; do STATUS=$(aws codebuild batch-get-builds --ids "$BUILD_ID" --region ap-northeast-1 --query 'builds[0].buildStatus' --output text); echo "Build status: $STATUS"; if [ "$STATUS" != "IN_PROGRESS" ]; then break; fi; sleep 10; done && echo "Final status: $STATUS"
 ```
 
+ビルドが成功すると、ECRにコンテナイメージがプッシュされます。
+
 ## ECRのイメージを使ってデプロイ
+
+では、ECRにプッシュされたコンテナイメージを使ってECS Express Modeでデプロイを行います。
+以下のコマンドでCloudFormationスタックをデプロイします。
 
 ```bash
 aws cloudformation deploy --template-file EcsExpress.yml --stack-name ecs-express-stack --capabilities CAPABILITY_NAMED_IAM --region ap-northeast-1
 ```
+
+スタックのデプロイが完了したら、以下のコマンドでECSサービスのステータスを確認します。
 
 ## 検証して思ったこと
 
