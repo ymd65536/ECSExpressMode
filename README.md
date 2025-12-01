@@ -1,4 +1,8 @@
 # 【AWS】検証！Amazon ECS Express ModeとCode Buildでデプロイ
+## この記事のポイント
+
+- Amazon ECS Express Modeをハンズオンしたうえで課題となる点を書いているよ
+
 ## はじめに
 
 この記事では「この前リリースされた機能って実際に動かすとどんな感じなんだろう」とか「もしかしたら内容次第では使えるかも？？」などAWSサービスの中でも特定の機能にフォーカスして検証していく記事です。
@@ -140,6 +144,21 @@ aws ec2 describe-vpcs --filters "Name=isDefault,Values=true" --query "Vpcs[0].Is
 true
 ```
 
+### リポジトリをクローンする
+
+セットアップするために、リポジトリをクローンします。
+
+```bash
+git clone https://github.com/ymd65536/ECSExpressMode.git
+```
+
+このリポジトリに今回のセットあぷに必要なファイルが含まれています。
+ディレクトリを変更します。
+
+```bash
+cd ECSExpressMode
+```
+
 ## CodeBuildを構築してイメージをビルド
 
 ではここから、ECS Express Modeで使用するコンテナイメージをCodeBuildでビルドしてECRにプッシュする手順を紹介します。
@@ -157,8 +176,6 @@ aws cloudformation deploy --template-file image_build.yml --stack-name ecs-expre
 aws codebuild start-build --project-name image-build-stack-build-project --region ap-northeast-1 && BUILD_ID="image-build-stack-build-project:e8aeb764-5c76-480c-87e5-3a1183944c69" && while true; do STATUS=$(aws codebuild batch-get-builds --ids "$BUILD_ID" --region ap-northeast-1 --query 'builds[0].buildStatus' --output text); echo "Build status: $STATUS"; if [ "$STATUS" != "IN_PROGRESS" ]; then break; fi; sleep 10; done && echo "Final status: $STATUS"
 ```
 
-ビルドが成功すると、ECRにコンテナイメージがプッシュされます。
-
 ## ECRのイメージを使ってデプロイ
 
 では、ECRにプッシュされたコンテナイメージを使ってECS Express Modeでデプロイを行います。
@@ -167,8 +184,6 @@ aws codebuild start-build --project-name image-build-stack-build-project --regio
 ```bash
 aws cloudformation deploy --template-file EcsExpress.yml --stack-name ecs-express-stack --capabilities CAPABILITY_NAMED_IAM --region ap-northeast-1
 ```
-
-スタックのデプロイが完了したら、以下のコマンドでECSサービスのステータスを確認します。
 
 ## 検証して思ったこと
 
@@ -225,7 +240,9 @@ AWSの公式ブログでは各種IaC(TerraformやAWS CDK、CloudFormation)にも
 
 TaskExecutionRoleのポリシーでは`arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy`が必要であり、InfrastructureRoleには`arn:aws:iam::aws:policy/service-role/AmazonECSInfrastructureRoleforExpressGatewayServices`が必要です。
 
-これもまた不思議なところで、ECSといったらTaskExecutionRoleと`TaskRole`の2つが必要ですが、ECS Express Modeを使う場合はTaskExecutionRoleとInfrastructureRoleの2つが必要になります。TaskRoleを明示的に指定しなくても良いということです。
+これもまた不思議なところで、ECSといったらTaskExecutionRoleと`TaskRole`の2つが必要です。
+
+ECS Express Modeを使う場合はTaskExecutionRoleとInfrastructureRoleの2つが必要になります。TaskRoleを明示的に指定しなくても良いということです。
 
 ※TaskRoleはAdditional Configuration(追加設定)で任意に指定できます。
 
@@ -244,6 +261,8 @@ ECS Express Modeを使ってみての感想としては、簡単にECSのデプ�
 アプリケーションをサクッとデプロイしてPoCしたい場合や、小規模なプロジェクトでECSを使いたい場合には特に有用だと感じました。
 
 個人的にはALBを使わないECSの利用が多いのでそういう設定ができたらもっと便利になるのではないかと思いました。
+
+# ここから下はログイン手順
 
 ## AWS CLI インストールと SSO ログイン手順 (Linux環境)
 
