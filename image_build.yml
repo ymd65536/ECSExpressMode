@@ -18,7 +18,7 @@ Parameters:
     Description: Container Name for ECS
 
 Resources:
-  # CodeBuild用のサービスロール
+  # CodeBuild Service Role
   CodeBuildServiceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -34,6 +34,12 @@ Resources:
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
+              - Effect: Allow
+                Action:
+                  - 'ssm:StartSession'
+                Resource:
+                  - !Sub 'arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:build/*'
+                  - !Sub 'arn:aws:ssm:${AWS::Region}::document/AWS-StartSSHSession'
               - Effect: Allow
                 Action:
                   - 'logs:CreateLogGroup'
